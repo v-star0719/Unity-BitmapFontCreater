@@ -1,1 +1,13 @@
-0123456789,.
+//使用制表符(\t)分隔文件名和标点
+shuihuzhuan_jiangchishuzi_00	0
+shuihuzhuan_jiangchishuzi_01	1
+shuihuzhuan_jiangchishuzi_02	2
+shuihuzhuan_jiangchishuzi_03	3
+shuihuzhuan_jiangchishuzi_04	4
+shuihuzhuan_jiangchishuzi_05	5
+shuihuzhuan_jiangchishuzi_06	6
+shuihuzhuan_jiangchishuzi_07	7
+shuihuzhuan_jiangchishuzi_08	8
+shuihuzhuan_jiangchishuzi_09	9
+shuihuzhuan_jiangchishuzi_dh	,
+shuihuzhuan_jiangchishuzi_dian	.

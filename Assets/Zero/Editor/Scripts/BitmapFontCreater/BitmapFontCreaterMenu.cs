@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -79,26 +79,76 @@ namespace ZeroEditor
                 return;
             }
 
-            string charsContent = File.ReadAllText(charsTxtFile);
-            char[] chars = charsContent.ToCharArray();
-
-            //找到所有的图片
-            var files = Directory.GetFiles(path, "*.png", SearchOption.TopDirectoryOnly);
-
-            if(chars.Length != files.Length)
+            //读取文件，解析文件名和字符映射
+            Dictionary<string, char> fileName2Char = new();
+            var lines = File.ReadAllText(charsTxtFile).Replace("\r", "").Split("\n");
+            var failed = false;
+            for (var i = 0; i < lines.Length; i++)
             {
-                Debug.LogErrorFormat("PNG文件数量({0})和字符数量({1})不一致，请确定两者一致避免出错!", files.Length, chars.Length);
+                var line = lines[i];
+                if (string.IsNullOrEmpty(line) || line.StartsWith("//"))
+                {
+                    continue;
+                }
+
+                var parts = line.Split("\t");
+                if (parts.Length != 2)
+                {
+                    Debug.LogError($"配置错误, 多个制表符分隔。 行{i}");
+                    failed = true;
+                    continue;
+                }
+
+                if (parts[1].Length != 1)
+                {
+                    Debug.LogError($"配置错误, 不是一个字符。 行{i}");
+                    failed = true;
+                    continue;
+                }
+                fileName2Char[parts[0]] = parts[1].ToCharArray()[0];
+            }
+
+            if (failed)
+            {
                 return;
             }
 
-            Texture2D[] textures = new Texture2D[files.Length];
+            //找到所有图片，生成对应的字符列表
+            var files = Directory.GetFiles(path, "*.png", SearchOption.TopDirectoryOnly);
+            List<char> chars = new();
+            foreach (var file in files)
+            {
+                var fileName = Path.GetFileNameWithoutExtension(file);
+                if (fileName2Char.TryGetValue(fileName, out var ch))
+                {
+                    chars.Add(ch);
+                }
+                else
+                {
+                    failed = true;
+                    Debug.LogError($"配置错误, 文件没有对应的。 行{file}");
+                }
+            }
+            if (failed)
+            {
+                return;
+            }
 
+            //文件和字符匹配校验
+            if(chars.Count != files.Length)
+            {
+                Debug.LogErrorFormat("PNG文件数量({0})和字符数量({1})不一致，请确定两者一致避免出错!", files.Length, chars.Count);
+                return;
+            }
+
+            //加载图片的Texture2D
+            Texture2D[] textures = new Texture2D[files.Length];
             for(var i = 0; i < files.Length; i++)
             {
                 textures[i] = AssetDatabase.LoadAssetAtPath<Texture2D>(files[i]);
-            }            
+            }
 
-            new BitmapFontCreateCommand(textures, chars, path, dirObj.name).Execute();
+            new BitmapFontCreateCommand(textures, chars.ToArray(), path, dirObj.name).Execute();
         }
 
         /// <summary>
