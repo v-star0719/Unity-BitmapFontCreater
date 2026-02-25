@@ -193,6 +193,7 @@ namespace ZeroEditor
             var bytes = textureAtlas.EncodeToPNG();
             File.WriteAllBytes(TextureAtlasFile, bytes);
             AssetDatabase.Refresh();
+            UnityEngine.Object.DestroyImmediate(textureAtlas);
 
             TextureAtlas = AssetDatabase.LoadAssetAtPath<Texture>(TextureAtlasFile);
         }
